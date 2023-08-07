@@ -8,27 +8,30 @@ import matplotlib.pyplot as plt
 with open('secretkey.txt', 'r') as f:
     secret = f.readline()
 
-low=1
-high=10
-samples=500
+low=23
+high=33
+samples=1000
 
 enc = tiktoken.encoding_for_model("gpt-3.5-turbo")
 possible_nums=range(low,high+1) # int from 1 to 10
 possible_tokens = {f"{enc.encode(f'{i}')[0]}": 100 for i in possible_nums} #coerces model to generate a number from 1 to 10
 
 async def generateRating(metrics):
-    completion = await openai_async.chat_complete(
-        secret,
-        timeout=60,
-        payload={
-            "model": "gpt-3.5-turbo",
-            "messages": [{"role": "user", "content": f"generate a random number from {str(low)} to {(high)}"}],
-            "temperature": 0.7,
-            "max_tokens": 1,
-            "logit_bias": possible_tokens
+    try:
+        completion = await openai_async.chat_complete(
+            secret,
+            timeout=60,
+            payload={
+                "model": "gpt-3.5-turbo",
+                "messages": [{"role": "user", "content": f"generate a random number from {str(low)} to {(high)}"}],
+                "temperature": 0.7,
+                "max_tokens": 1,
+                "logit_bias": possible_tokens #won't work for floats or large numbers due to tokenization 
 
-        },
-    )
+            },
+        )
+    except:
+        return None
     try:
         # print(completion.json())
         res = completion.json()['choices'][0]['message']['content']
@@ -42,8 +45,8 @@ async def generateRating(metrics):
 
 async def run_concurrent_calls():
 
-    # Semaphore to limit the number of concurrent tasks
-    semaphore = asyncio.Semaphore(200)
+    # Semaphore to limit the number of concurrent tasks. Kind of finicky with OpenAI API w/r/t how many concurrent calls you can make without timing out
+    semaphore = asyncio.Semaphore(100)
 
     async def bounded_generateRating(metrics):
         async with semaphore:
@@ -52,12 +55,13 @@ async def run_concurrent_calls():
     # List to store the coroutines
     tasks = []
 
-    for _ in range(samples):
+    for _ in range(samples+1):
         task = bounded_generateRating(metrics=[])
         tasks.append(task)
 
     # Run the coroutines concurrently
     results = await asyncio.gather(*tasks)
+
 
     # Print or process the results as needed
     print(len(results))
@@ -65,23 +69,28 @@ async def run_concurrent_calls():
     print("mean: ", sum(results)/len(results), "versus expected: ", (high+low)/2)
     # Plot histogram
     # Compute weights for each data point such that the histogram sums up to 1
+    #save results to a csv
+    with open(f'{str(low)}_{str(high)}_n{len(results)}.csv', 'w') as f:
+        for i in results:
+            f.write(str(i)+",\n")
     data=results
     
     weights = [1/len(data) for _ in data]
 
     # Plot histogram with proportions
-    plt.hist(data, bins=range(1, 12), edgecolor="k", align='left', weights=weights)
+    plt.hist(data, bins=range(low, high+2), edgecolor="k", align='left', weights=weights) #works well for ints, but not for floats
     expected_proportion = 1/len(range(low, high+1))
     plt.axhline(y=expected_proportion, color='r', linestyle='--', label="Expected Proportion")
 
     # Set the title and labels
-    plt.title('Integers from 1 to 10, n= '+str(len(data)))
+    plt.title(f'Integers from {low} to {high}, n= '+str(len(data)))
     plt.xlabel('Value')
     plt.ylabel('Proportion')
-    plt.xticks(list(range(1, 11)))
+    plt.xticks(list(range(low, high+1)))
 
     # Display the histogram
     plt.show()
+
 
 if __name__ == "__main__":
     # Setup asyncio event loop
@@ -91,21 +100,3 @@ if __name__ == "__main__":
     loop.run_until_complete(run_concurrent_calls())
 
 
-
-# import numpy as np
-
-# # Generate pseudo-random numbers between 0 and 10
-# pseudo_random_numbers = np.random.randint(0, 10, 1000)
-# bias = np.random.randint(0, 6, 1000)
-# pseudo_random_numbers=np.concatenate((pseudo_random_numbers, bias))
-
-# # # Construct a normalized histogram
-# hist, bin_edges = np.histogram(pseudo_random_numbers, bins=range(11), density=True)
-
-# # Define the target flat (uniform) distribution
-# uniform_distribution = [1/10] * 10
-
-# # Compute KL divergence
-# kl_divergence = np.sum(hist * np.log(hist / uniform_distribution))
-
-# print(kl_divergence)
