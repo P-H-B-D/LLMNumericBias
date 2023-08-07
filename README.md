@@ -27,8 +27,10 @@ dataGenAsync.py and dataGenAsyncNoLogit.py are used to generate the data.
 
 visualize.py is used to take the csv data and visualize it as a normalized distribution.
 
-Standard prompt: generate a random number from {str(low)} to {(high)}
-Inclusive prompt: generate a random number from {str(low)} (inclusive) to {(high)} (inclusive)
+Standard prompt: 
+    - "generate a random number from {str(low)} to {(high)}"
+Inclusive prompt: 
+    - "generate a random number from {str(low)} (inclusive) to {(high)} (inclusive)"
 
 # TODO:
 - More distributions + ranges. 
