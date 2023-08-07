@@ -8,6 +8,8 @@ Based off of the work of [https://gist.github.com/alonsosilvaallende/7551194ecb9
 
 The main reason why I am doing this is that I am also planning to study downstream effects of numerical bias in LLMs, notably the possible effect of the type of numerical bias observed in RNG to the common implementation of using an LLM as a numerical rating or system (e.g. "Analyze the sentiment of this message from 0 to 10."). If a more generic technique to normalize RNG distributions is determined, I believe there is reason to believe that this could help alleviate any [intrinsic bias](https://twitter.com/Teknium1/status/1687983538996740097) in LLM rating systems.
 
+While skewed distributions may be counteracted by measuring model outputs on a representative sample of the data and constructing an inverse normalization function, this process is 1) time consuming and 2) if data is insufficient to form a representative sample (as it often is with NLP), ineffectual. Better to do it with a prompt modification if possible. 
+
 Follow along here or on my [Twitter](https://twitter.com/0xPHBD) and feel free to reach out if you would like to collaborate on this project or similar works. 
 
 # Data
