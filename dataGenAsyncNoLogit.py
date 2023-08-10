@@ -10,11 +10,12 @@ import numpy as np
 with open('secretkey.txt', 'r') as f:
     secret = f.readline()
 
-low=0
-high=6.999999
+low=-0.5
+high=0.5
 samples=1000
 
-float_range = np.arange(low, high+0.1, 0.1) # float from 0.7 to 0.9
+# float_range=range(low,high+1,1)
+# float_range = np.arange(low, high+0.1, 0.1) # float from 0.7 to 0.9
 
 
 
