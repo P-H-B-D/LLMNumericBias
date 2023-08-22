@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 with open('secretkey.txt', 'r') as f:
     secret = f.readline()
 
-low=23
-high=33
+low=1
+high=5
 samples=1000
 
 enc = tiktoken.encoding_for_model("gpt-3.5-turbo")

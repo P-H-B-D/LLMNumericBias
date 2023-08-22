@@ -10,8 +10,8 @@ import numpy as np
 with open('secretkey.txt', 'r') as f:
     secret = f.readline()
 
-low=-0.5
-high=0.5
+low=1
+high=5
 samples=1000
 
 # float_range=range(low,high+1,1)
